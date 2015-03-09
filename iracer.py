@@ -4,14 +4,13 @@ import bluetooth
 import time
 import pygame
 
-# Author: Team Squirrel
-# Date: 09 Mar 2015
-# Version: 0.0.9
-#
 # Description:
 # This program controls an iRacer bluetooth controlled car. It is based on a
 # makey-makey controller, which can be found using this following url:
 # http://conoroneill.net/makey-makey-raspberry-pi-iracer-bluetooth-cheese-controlled-car-ccc/
+# Instructions on how to install the joystick drivers can be found at
+# PS3 Dual Shock Controller and Pygame
+# https://docs.google.com/document/d/1zMlKfshKOKyTrip_NqSnS24qzly-iuWKy2LsFhi3xTM/edit?pli=1
 
 DEBUG_ON = False
 
@@ -323,19 +322,11 @@ class JoystickHandler:
       self.fasterSlowerTxt = "----"
       self.stopButtonTxt = "----"
       
-      #stop joystick debug messages
-      sys.stdout = os.devnull
-      sys.stderr = os.devnull
-      
       leftRightAxis = self.joystick.get_axis(0)
       upDownAxis = self.joystick.get_axis(1)
       fasterSlowerAxis = self.joystick.get_axis(3)
       stopButtonValue = self.joystick.get_button(14)
       
-      #restart joystick debug messages
-      sys.stdout = sys.__stdout__
-      sys.stderr = sys.__stderr__
-
       if (leftRightAxis < -0.3):
         self.leftRightTxt = "Left"
       else:
