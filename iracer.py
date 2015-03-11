@@ -4,13 +4,15 @@ import bluetooth
 import time
 import pygame
 
-# Description:
 # This program controls an iRacer bluetooth controlled car. It is based on a
-# makey-makey controller, which can be found using this following url:
+# makey-makey controller, which can be found using the following url:
 # http://conoroneill.net/makey-makey-raspberry-pi-iracer-bluetooth-cheese-controlled-car-ccc/
 # Instructions on how to install the joystick drivers can be found at
 # PS3 Dual Shock Controller and Pygame
 # https://docs.google.com/document/d/1zMlKfshKOKyTrip_NqSnS24qzly-iuWKy2LsFhi3xTM/edit?pli=1
+#
+# Note: Remember to disable sixad's bluetooth drivers, they conflict with Bluez being used here
+# i.e. sixad -r
 
 DEBUG_ON = False
 
@@ -30,7 +32,7 @@ def logToConsole(message):
   if DEBUG_ON:
     print message
 
-# The iRacer class controls speed and direction controls
+# The iRacer class sends speed and direction commands to the car
 class iRacer(object):
 
   def __init__(self, speed, direction):
@@ -171,6 +173,7 @@ class InputAdaptor:
     if (x,y) == (4,4):
       self.iracer.decreaseSpeed()
 
+    #an ambitious 3-point turn
     if (x,y) == (5,5):
       #set a fixed speed
       self.iracer.setSpeed(6)
@@ -184,7 +187,7 @@ class InputAdaptor:
       time.sleep(1.2)
       self.iracer.stopMoving()
 
-# This class periodically polls the user keyboard for input, as
+# This KeyboardHandler class periodically polls the user keyboard for key events, as
 # well as displaying user instructions to the screen
 class KeyboardHandler:
 
@@ -278,7 +281,8 @@ class KeyboardHandler:
       self.adaptor.sendCommand(x, y)
       (x, y) = (0, 0)
 
-# This class periodically polls a Sony Dual Shock Controller for input
+# The JoystickHandler class periodically polls a Sony Dual Shock Controller for analogue
+# stick and button events
 class JoystickHandler:
 
   def __init__(self, adaptor):
@@ -392,8 +396,16 @@ class JoystickHandler:
       logToConsole(leftRightTxt + "|" + upDownTxt + "|" + fasterSlowerTxt + "|" + stopButtonTxt)
 
 def main():
-  # Set up Keyboard Inputs
+
+  # Check command line inputs before starting for real
+  if (len(sys.argv) < 2):
+    print 'Please specify controller type (joystick/keyboard)'
+    print 'e.g. python iracer.py keyboard'
+    sys.exit()
+
   pygame.init()
+  # get controller type from the command line
+  controllerType = sys.argv[1]
 
   gameDisplay = pygame.display.set_mode((400, 200))
   pygame.display.set_caption('iRacer Controller')
@@ -405,13 +417,19 @@ def main():
   iracer = iRacer(0x06, 0x10)
   adaptor = InputAdaptor(iracer)
 
-  joystickHandler = JoystickHandler(adaptor)
-  joystickHandler.displayHelp()
-  joystickHandler.start()
-
-# kbHandler = KeyboardHandler(adaptor)
-#  kbHandler.displayHelp()
-#  kbHandler.start()
+  if (controllerType == 'keyboard'):
+    print 'Starting with Keyboard inputs'
+    kbHandler = KeyboardHandler(adaptor)
+    kbHandler.displayHelp()
+    kbHandler.start()
+  else:
+    if (controllerType == 'joystick'):
+      print 'Starting with Joystick inputs'
+      joystickHandler = JoystickHandler(adaptor)
+      joystickHandler.displayHelp()
+      joystickHandler.start()
+    else:
+      print 'Please specify controller Type (joystick/keyboard)'
 
   # We're finished, so let's tidy up
   # sock.close()
