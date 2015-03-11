@@ -188,9 +188,6 @@ class InputAdaptor:
 # well as displaying user instructions to the screen
 class KeyboardHandler:
 
-  # Controller variables
-  gameRunning = True
-
   def __init__(self, adaptor):
     self.adaptor = adaptor
 
@@ -224,13 +221,15 @@ class KeyboardHandler:
 
     global DEBUG_ON 
     
+    gameRunning = True
+
     # go right x = 1, go left x = -1 
     x = 0
     # go forward x = 1, go backward x = -1 
     y = 0
 
     # the main event loop
-    while self.gameRunning:
+    while gameRunning:
 
       # Check the keys periodically
       time.sleep(0.15)
@@ -238,7 +237,7 @@ class KeyboardHandler:
       for event in pygame.event.get():
         # Does the user want to quit?
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-          self.gameRunning = False
+          gameRunning = False
 
       # key.get_pressed can handle simultaneous key presses
       key = pygame.key.get_pressed()
@@ -282,31 +281,55 @@ class KeyboardHandler:
 # This class periodically polls a Sony Dual Shock Controller for input
 class JoystickHandler:
 
-  # Controller variables
-  gameRunning = True
-  leftRightTxt = ""
-  upDownTxt = ""
-  fasterSlowerTxt = ""
-  stopButtonTxt = "" 
-  joystick = 0
-
   def __init__(self, adaptor):
     self.adaptor = adaptor
     pygame.joystick.init()
     self.joystick = pygame.joystick.Joystick(0)
     self.joystick.init()
 
+
+  def displayHelp(self):
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""
+    print "                Welcome to Team Squirrel iRacer controller"
+    print ""
+    print ""
+    print ""
+    print "      Use left analogue stick for direction"
+    print "      Use right analogue stick for speed"
+    print "      'X' = STOP"
+    print "      'esc' = QUIT"
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""
+    print ""
+
   def start(self):
 
     global DEBUG_ON 
     
+    leftRightTxt = ""
+    upDownTxt = ""
+    fasterSlowerTxt = ""
+    stopButtonTxt = "" 
+
+    gameRunning = True
+
     # go right x = 1, go left x = -1 
     x = 0
     # go forward x = 1, go backward x = -1 
     y = 0
 
     # the main event loop
-    while self.gameRunning:
+    while gameRunning:
 
       # Check the keys periodically
       time.sleep(0.15)
@@ -314,58 +337,66 @@ class JoystickHandler:
       for event in pygame.event.get():
         # Does the user want to quit?
         if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-          self.gameRunning = False
+          gameRunning = False
 
       # test joystick axes
-      self.leftRightTxt = "----"
-      self.upDownTxt = "----"
-      self.fasterSlowerTxt = "----"
-      self.stopButtonTxt = "----"
+      leftRightTxt = "----"
+      upDownTxt = "----"
+      fasterSlowerTxt = "----"
+      stopButtonTxt = "----"
       
       leftRightAxis = self.joystick.get_axis(0)
       upDownAxis = self.joystick.get_axis(1)
       fasterSlowerAxis = self.joystick.get_axis(3)
+      debugButtonValue = self.joystick.get_button(12)
       stopButtonValue = self.joystick.get_button(14)
       
       if (leftRightAxis < -0.3):
         x = -1
-        self.leftRightTxt = "Left"
+        leftRightTxt = "Left"
       else:
         if (leftRightAxis > 0.3):
           x = 1
-          self.leftRightTxt = "Right"
+          leftRightTxt = "Right"
 
       if (upDownAxis < -0.3):
         y = 1
-        self.upDownTxt = "Up"
+        upDownTxt = "Up"
       else:
         if (upDownAxis > 0.3):
           y = -1
-          self.upDownTxt = "Down"
+          upDownTxt = "Down"
 
       if (fasterSlowerAxis < 0):
         (x, y) = (3, 3)
-        self.fasterSlowerTxt = "IncreaseSpeed"
+        fasterSlowerTxt = "IncreaseSpeed"
       else:
         if (fasterSlowerAxis > 0):
           (x, y) = (4, 4)
-          self.fasterSlowerTxt = "DecreaseSpeed"
+          fasterSlowerTxt = "DecreaseSpeed"
 
       if (stopButtonValue == 1):
         (x, y) = (2, 2)
-        self.stopButtonTxt = "Stop"
+        stopButtonTxt = "Stop"
+
+      if (debugButtonValue == 1):
+        DEBUG_ON = not DEBUG_ON
+        if DEBUG_ON:
+          print "Debug Mode On"
+        else:
+          print "Debug Mode Off"
 
       self.adaptor.sendCommand(x, y)
       (x, y) = (0, 0)
 
-      print self.leftRightTxt + "|" + self.upDownTxt + "|" + self.fasterSlowerTxt + "|" + self.stopButtonTxt
+      logToConsole(leftRightTxt + "|" + upDownTxt + "|" + fasterSlowerTxt + "|" + stopButtonTxt)
 
 def main():
   # Set up Keyboard Inputs
   pygame.init()
 
   gameDisplay = pygame.display.set_mode((400, 200))
-  pygame.display.set_caption('Keyboard Input')
+  pygame.display.set_caption('iRacer Controller')
 
   # to spam the pygame.KEYDOWN event every 100ms while key being pressed
   pygame.key.set_repeat(100, 100)
@@ -373,10 +404,12 @@ def main():
   # Let's initialise our devices
   iracer = iRacer(0x06, 0x10)
   adaptor = InputAdaptor(iracer)
-  joystickHandler = JoystickHandler(adaptor)
-# kbHandler = KeyboardHandler(adaptor)
 
+  joystickHandler = JoystickHandler(adaptor)
+  joystickHandler.displayHelp()
   joystickHandler.start()
+
+# kbHandler = KeyboardHandler(adaptor)
 #  kbHandler.displayHelp()
 #  kbHandler.start()
 
