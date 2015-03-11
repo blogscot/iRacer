@@ -19,11 +19,11 @@ bd_addr = "00:12:05:11:97:90"
 port = 1
 sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
 
-#try:
-#  sock.connect((bd_addr, port))
-#except bluetooth.btcommon.BluetoothError, value :
-#  print "Unable to establish a Bluetooth socket, code:", value
-#  sys.exit()
+# try:
+#   sock.connect((bd_addr, port))
+# except bluetooth.btcommon.BluetoothError, value :
+#   print "Unable to establish a Bluetooth socket, code:", value
+#   sys.exit()
 
 # Outputs debug info to the console when DEBUG flag is True
 def logToConsole(message):
@@ -41,7 +41,7 @@ class iRacer(object):
   # the established bluetooth socket
   def sendToRacer(self):
     logToConsole(hex(self.carDirection|self.carSpeed))
-#    sock.send(chr(self.carDirection|self.carSpeed))
+    # sock.send(chr(self.carDirection|self.carSpeed))
 
   def goForward(self):
     logToConsole('go forward')
@@ -328,26 +328,35 @@ class JoystickHandler:
       stopButtonValue = self.joystick.get_button(14)
       
       if (leftRightAxis < -0.3):
+        x = -1
         self.leftRightTxt = "Left"
       else:
         if (leftRightAxis > 0.3):
+          x = 1
           self.leftRightTxt = "Right"
 
       if (upDownAxis < -0.3):
+        y = 1
         self.upDownTxt = "Up"
       else:
         if (upDownAxis > 0.3):
+          y = -1
           self.upDownTxt = "Down"
 
       if (fasterSlowerAxis < 0):
+        (x, y) = (3, 3)
         self.fasterSlowerTxt = "IncreaseSpeed"
       else:
         if (fasterSlowerAxis > 0):
+          (x, y) = (4, 4)
           self.fasterSlowerTxt = "DecreaseSpeed"
 
       if (stopButtonValue == 1):
+        (x, y) = (2, 2)
         self.stopButtonTxt = "Stop"
 
+      self.adaptor.sendCommand(x, y)
+      (x, y) = (0, 0)
 
       print self.leftRightTxt + "|" + self.upDownTxt + "|" + self.fasterSlowerTxt + "|" + self.stopButtonTxt
 
@@ -372,7 +381,7 @@ def main():
 #  kbHandler.start()
 
   # We're finished, so let's tidy up
-#  sock.close()
+  # sock.close()
   pygame.quit()
   quit()
 
