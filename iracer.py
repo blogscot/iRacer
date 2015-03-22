@@ -210,7 +210,7 @@ class KeyboardHandler:
     print "      's' = SLOWER"
     print "      'space' = STOP"
     print "      'esc' = QUIT"
-    print "      'h' = To redisplay this help page"
+    print "      'h' = Redisplay this help page"
     print ""
     print ""
     print ""
@@ -256,12 +256,15 @@ class KeyboardHandler:
       if key[pygame.K_RIGHT]:
         x = 1
 
+      #go faster
       if key[pygame.K_f]:
         (x, y) = (3, 3)
 
+      #go slower
       if key[pygame.K_s]:
         (x, y) = (4, 4)
 
+      # do set manouvre
       if key[pygame.K_1]:
         (x, y) = (5, 5)
 
@@ -275,19 +278,26 @@ class KeyboardHandler:
         else:
           print "Debug Mode Off"
 
+      # stop
       if key[pygame.K_SPACE]:
         (x, y) = (2, 2)
 
+      # default case, i.e. no inputs
       self.adaptor.sendCommand(x, y)
       (x, y) = (0, 0)
 
-# The JoystickHandler class periodically polls a Sony Dual Shock Controller for analogue
-# stick and button events
+# The JoystickHandler class periodically polls a Sony Dual Shock Controller analogue
+# sticks and button events
 class JoystickHandler:
 
   def __init__(self, adaptor):
     self.adaptor = adaptor
     pygame.joystick.init()
+
+    if pygame.joystick.get_count() < 1:
+        print("Unable to detect joystick. Exiting.")
+        sys.exit()
+        
     self.joystick = pygame.joystick.Joystick(0)
     self.joystick.init()
 
@@ -349,12 +359,15 @@ class JoystickHandler:
       fasterSlowerTxt = "----"
       stopButtonTxt = "----"
       
+      # read inputs
       leftRightAxis = self.joystick.get_axis(0)
       upDownAxis = self.joystick.get_axis(1)
       fasterSlowerAxis = self.joystick.get_axis(3)
       debugButtonValue = self.joystick.get_button(12)
       stopButtonValue = self.joystick.get_button(14)
       
+      # the input checks use a tolerance value so that the user
+      # doesn't have to be *extremely* precise.
       if (leftRightAxis < -0.3):
         x = -1
         leftRightTxt = "Left"
@@ -418,13 +431,11 @@ def main():
   adaptor = InputAdaptor(iracer)
 
   if (controllerType == 'keyboard'):
-    print 'Starting with Keyboard inputs'
     kbHandler = KeyboardHandler(adaptor)
     kbHandler.displayHelp()
     kbHandler.start()
   else:
     if (controllerType == 'joystick'):
-      print 'Starting with Joystick inputs'
       joystickHandler = JoystickHandler(adaptor)
       joystickHandler.displayHelp()
       joystickHandler.start()
